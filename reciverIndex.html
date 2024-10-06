@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Receiver - Post Task</title>
+    <link rel="stylesheet" href="reciverIndexStyles.css">
+</head>
+<body>
+    <div>
+        <h2>Askit</h2>
+        <button id="addTaskButton">Add a Task</button>
+        <h4 align="center">Your Posted Tasks</h4>
+        <div id="tasksContainer"></div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get('username');
+
+      
+
+        document.getElementById('addTaskButton').onclick = () => {
+            window.location.href = 'posttask.html?username=' + username;
+        };
+
+        async function fetchUserTasks() {
+            try {
+                const response = await fetch(`http://localhost:3000/tasks?username=${username}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch tasks');
+                }
+                const tasks = await response.json();
+                const tasksContainer = document.getElementById('tasksContainer');
+
+                if (tasks.length === 0) {
+                    tasksContainer.innerHTML = '<p>No tasks posted.</p>';
+                } else {
+                    tasksContainer.innerHTML = tasks.map(task => `
+                        <div class="task">
+                            <h3>${task.title}</h3>
+                            <p><strong>Detail:</strong> ${task.detail}</p>
+                            <p><strong>Deadline:</strong> ${task.deadline}</p> <!-- Display the deadline -->
+                            <p><strong>Type:</strong> ${task.type}</p> <!-- Display the type -->
+                            <p><strong>Mode:</strong> ${task.mode}</p> <!-- Display the mode -->
+                            <p><strong>Budget:</strong> ${task.budget}</p> <!-- Display the budget --> <!-- NEW LINE -->
+                            <button class="viewOffersButton" data-taskid="${task._id}">View Offers</button> <!-- Styled button -->
+                        </div>
+                    `).join('');
+
+                    document.querySelectorAll('.viewOffersButton').forEach(button => {
+                        button.addEventListener('click', (event) => {
+                            const taskId = event.target.getAttribute('data-taskid');
+                            // Redirect to the offers page with the taskId as query parameter
+                            window.location.href = `viewoffers.html?taskId=${taskId}`;
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching tasks:', error);
+            }
+        }
+
+        fetchUserTasks();
+    </script>
+</body>
+</html>
